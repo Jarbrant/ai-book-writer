@@ -1,1 +1,64 @@
-
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Bokskrivare</title>
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; gap: 2em; padding:2em; }
+    .left { width: 40%; }
+    .right { width: 55%; background: #f7f7f7; padding: 1em; border-radius: 8px; }
+    h2 { margin-top:1em; }
+    input, textarea { width: 100%; margin-top: 5px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <h2>Boktitel</h2>
+    <form action="/set_title" method="POST">
+      <input type="text" name="title" value="{{ book.title }}">
+      <button type="submit">Spara</button>
+    </form>
+    <h2>Nya kapitel</h2>
+    <form action="/add_chapter" method="POST">
+      <input type="text" name="chapter_name" placeholder="Kapitelnamn">
+      <button type="submit">Lägg till kapitel</button>
+    </form>
+    {% for chap_id, chapter in enumerate(book.chapters) %}
+      <div style="margin-top:1em;">
+        <strong>{{ chapter.name }}</strong>
+        <form action="/add_block/{{ chap_id }}" method="POST" style="margin-top:10px;">
+          <input type="text" name="block_name" placeholder="Blocknamn">
+          <textarea name="block_rules" placeholder="Unika regler för blocket (stil, tempo, etc.)"></textarea>
+          <button type="submit">Lägg till block</button>
+        </form>
+        {% for block_id, block in enumerate(chapter.blocks) %}
+          <div style="margin-left:2em;">
+            <div>
+              <em>{{ block.name }}</em>
+              <br>Regler: {{ block.rules }}
+              <br>
+              <a href="/generate/{{ chap_id }}/{{ block_id }}">Generera med AI</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="right">
+    <h2>Bokpreview</h2>
+    <p><strong>{{ book.title }}</strong></p>
+    {% for chap_id, chapter in enumerate(book.chapters) %}
+      <h3>{{ chapter.name }}</h3>
+      {% for block_id, block in enumerate(chapter.blocks) %}
+        <div style="margin-bottom:2em;">
+          <strong>{{ block.name }}</strong><br>
+          <em>Regler: {{ block.rules }}</em><br>
+          <div style="background:#fff; padding:1em; border-radius:7px;">
+              {{ block_content[chap_id ~ '_' ~ block_id] if block_content.get(chap_id ~ '_' ~ block_id) }}
+          </div>
+        </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+</body>
+</html>
